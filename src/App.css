@@ -110,6 +110,11 @@
   font-size: 1.2rem;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
 }
 
 /* 移动端竖屏优化 */
@@ -155,6 +160,9 @@
     width: 45px;
     height: 45px;
     font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -200,6 +208,9 @@
     width: 40px;
     height: 40px;
     font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -208,6 +219,19 @@
   display: inline-flex;
   align-items: center;
   line-height: 1;
+}
+
+/* 确保所有文本和emoji完美居中 */
+.btn > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.debug-btn > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 横屏模式优化 */

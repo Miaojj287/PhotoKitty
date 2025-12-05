@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
+import './App.css';
 import {
   OrbitControls,
   Environment,
@@ -672,54 +673,31 @@ export default function PhotoKittyApp() {
   };
 
   return (
-    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#ffe6f2', position: 'relative', overflow: 'hidden' }}>
+    <div className="app-container">
 
       {/* Header Title */}
-      <div style={{ position: 'absolute', top: '20px', left: '30px', zIndex: 10 }}>
-        <h1 style={{ margin: 0, fontSize: '2rem', color: '#ff1493', fontFamily: 'Varela Round, sans-serif' }}>PhotoKitty 3D</h1>
+      <div className="header-left">
+        <h1 className="title">PhotoKitty 3D</h1>
         <button
           onClick={() => setSceneState(s => s === 'CHAOS' ? 'FORMED' : 'CHAOS')}
-          style={{
-            marginTop: '10px',
-            backgroundColor: '#ff1493',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: 'bold',
-            boxShadow: '0 4px 10px rgba(255, 20, 147, 0.3)'
-          }}
+          className="btn btn-primary"
         >
           {sceneState === 'CHAOS' ? '🐱 Formed' : '✨ Disperse'}
         </button>
       </div>
 
       {/* Birthday Button */}
-      <div style={{ position: 'absolute', top: '20px', right: '30px', zIndex: 10 }}>
+      <div className="header-right">
         <button
           onClick={() => setBirthdayMode(!birthdayMode)}
-          style={{
-            backgroundColor: birthdayMode ? '#ff1493' : 'white',
-            color: birthdayMode ? 'white' : '#ff1493',
-            border: '2px solid #ff1493',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: 'bold',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px',
-            boxShadow: '0 4px 10px rgba(255, 20, 147, 0.2)'
-          }}>
+          className={`btn btn-secondary ${birthdayMode ? 'active' : ''}`}
+        >
           {birthdayMode ? '🎂 Back to Kitty' : '🎂 Happy Birthday'}
         </button>
       </div>
 
       {/* Upload Photo Button - Bottom Left */}
-      <div style={{ position: 'absolute', bottom: '30px', left: '30px', zIndex: 10 }}>
+      <div className="bottom-left">
         <input
           ref={fileInputRef}
           type="file"
@@ -730,20 +708,8 @@ export default function PhotoKittyApp() {
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          style={{
-            backgroundColor: '#ff1493',
-            color: 'white',
-            border: 'none',
-            padding: '12px 20px',
-            borderRadius: '20px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: 'bold',
-            boxShadow: '0 4px 10px rgba(255, 20, 147, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className="btn btn-primary"
+          style={{ padding: '12px 20px', gap: '8px' }}
         >
           📸 Upload Photo
           <span style={{ 
@@ -760,13 +726,24 @@ export default function PhotoKittyApp() {
       {/* Debug & AI Status - Only show in Kitty mode */}
       {!birthdayMode && (
         <>
-          <div style={{ position: 'absolute', bottom: '30px', right: '40px', zIndex: 10 }}>
-            <button onClick={() => setDebugMode(!debugMode)} style={{ padding: '12px 15px', backgroundColor: debugMode ? '#FFD700' : 'rgba(255,255,255,0.5)', border: '1px solid #FFD700', color: debugMode ? '#000' : '#FF1493', fontFamily: 'sans-serif', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(4px)', borderRadius: '20px' }}>
-              {debugMode ? 'HIDE DEBUG' : '🛠 DEBUG'}
+          <div className="bottom-right">
+            <div className="ai-status" style={{ 
+              color: aiStatus.includes('ERROR') ? '#FF0000' : '#666',
+              fontSize: '0.8rem',
+              letterSpacing: '1px'
+            }}>
+              {aiStatus}
+            </div>
+            <button 
+              onClick={() => setDebugMode(!debugMode)} 
+              className="debug-btn"
+              style={{ 
+                backgroundColor: debugMode ? '#FFD700' : 'rgba(255, 20, 147, 0.8)',
+                color: debugMode ? '#000' : '#fff'
+              }}
+            >
+              {debugMode ? '✕' : '🛠'}
             </button>
-          </div>
-          <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', color: aiStatus.includes('ERROR') ? '#FF0000' : '#ff1493', fontSize: '10px', letterSpacing: '2px', zIndex: 10, background: 'rgba(255,255,255,0.8)', padding: '4px 8px', borderRadius: '4px' }}>
-            {aiStatus}
           </div>
         </>
       )}

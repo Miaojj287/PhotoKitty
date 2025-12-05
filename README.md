@@ -126,7 +126,8 @@ npm run build
 
 用到的AI、平台以优先级排序：Gemini Studio、Claude Code、Cursor、Antigravity、VS Code。
 
-同时特别感谢开源分享来自https://github.com/moleculemmeng020425/christmas-tree，开发灵感和手势算法底层源码来源于此。
+同时特别感谢开源分享来自https://github.com/moleculemmeng020425/christmas-tree 
+开发灵感和部分手势算法底层源码来源于此。
 
 ### Why Kitty？
 因为她喜欢。

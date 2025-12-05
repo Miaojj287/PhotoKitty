@@ -183,7 +183,7 @@ MIT License - 这意味着你可以以非商业化形式自由使用、修改和
 ---
 
 <div align="center">
-**Made with ❤️ and ☕ By [Etytech](https://etytech.com/)**
+*Made with ❤️ and ☕ By [Etytech](https://etytech.com/)*
 
 *用代码书写爱，用科技传递心意*
 

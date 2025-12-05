@@ -1,0 +1,16 @@
+/* src/index.css */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #ffe6f2;
+  overflow: hidden;
+  /* 彻底禁止滚动 */
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}

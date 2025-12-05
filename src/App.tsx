@@ -13,7 +13,7 @@ import { GestureRecognizer, FilesetResolver, DrawingUtils } from "@mediapipe/tas
 
 // --- 动态生成照片列表 (1.jpg 到 52.jpg) ---
 const TOTAL_NUMBERED_PHOTOS = 52;
-const bodyPhotoPaths = Array.from({ length: TOTAL_NUMBERED_PHOTOS }, (_, i) => `/photos/${i + 1}.jpg`);
+const bodyPhotoPaths = Array.from({ length: TOTAL_NUMBERED_PHOTOS }, (_, i) => `${import.meta.env.BASE_URL}photos/${i + 1}.jpg`);
 
 // --- 视觉配置 ---
 const CONFIG = {
@@ -215,7 +215,7 @@ const ParticleText = ({ text, position, scale = 1, state }: { text: string, posi
 
   useEffect(() => {
     const loader = new FontLoader();
-    loader.load('/fonts/helvetiker_regular.typeface.json', (font) => {
+    loader.load(`${import.meta.env.BASE_URL}fonts/helvetiker_regular.typeface.json`, (font) => {
       const geometry = new TextGeometry(text, {
         font: font,
         size: 3,
@@ -633,7 +633,7 @@ export default function PhotoKittyApp() {
         const img = new Image();
         img.onload = () => resolve(true);
         img.onerror = () => resolve(false);
-        img.src = `/photos/${index}.jpg`;
+        img.src = `${import.meta.env.BASE_URL}photos/${index}.jpg`;
       });
     };
 

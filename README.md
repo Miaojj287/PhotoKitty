@@ -9,7 +9,8 @@
 **生日快乐！希望这份礼物能让你感受到这一年我们一起创造的美好点滴。**
 
 项目一览：
-<img width="2560" height="1214" alt="image" src="https://github.com/user-attachments/assets/781b76a4-d817-468f-bdf4-9b0d54a802a7" />
+<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/0ac85324-1429-423d-bcbc-b3f14d216211" />
+
 
 ---
 

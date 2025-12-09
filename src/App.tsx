@@ -336,7 +336,7 @@ const BirthdayMessage = () => {
 };
 
 // --- Component: Composition Elements ---
-const CompositionElements = ({ state }: { state: 'CHAOS' | 'FORMED' }) => {
+const CompositionElements = ({ state, galleryMode, currentPhotoIndex }: { state: 'CHAOS' | 'FORMED', galleryMode: boolean, currentPhotoIndex: number }) => {
   const textures = useTexture(CONFIG.photos.body);
   const count = CONFIG.counts.total;
   const groupRef = useRef<THREE.Group>(null);
@@ -359,20 +359,68 @@ const CompositionElements = ({ state }: { state: 'CHAOS' | 'FORMED' }) => {
     });
   }, [textures, count]);
 
+  // Get unique photo indices for gallery (one per texture, max 52)
+  // IMPORTANT: Must use data's type, not getHelloKittyData which has random type
+  const uniquePhotoIndices = useMemo(() => {
+    const seenTextures = new Set<number>();
+    const indices: number[] = [];
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].type === 'PHOTO') {
+        const textureIndex = data[i].textureIndex;
+        if (!seenTextures.has(textureIndex)) {
+          seenTextures.add(textureIndex);
+          indices.push(i);
+        }
+      }
+    }
+    return indices;
+  }, [data]);
+
+  // Calculate gallery positions for photos with proper spacing
+  const getGalleryPosition = (photoIdx: number, totalPhotos: number, focusedIndex: number) => {
+    const radius = 20; // Larger radius for better spacing
+    // Calculate angle offset so focused photo is at front (z positive)
+    const angleOffset = (focusedIndex / totalPhotos) * Math.PI * 2;
+    const angle = (photoIdx / totalPhotos) * Math.PI * 2 - angleOffset;
+    return new THREE.Vector3(
+      Math.sin(angle) * radius,
+      0,
+      Math.cos(angle) * radius
+    );
+  };
+
   useFrame((_, delta) => {
     if (!groupRef.current) return;
     const isFormed = state === 'FORMED';
 
     groupRef.current.children.forEach((group, i) => {
       const objData = data[i];
-      const target = isFormed ? objData.targetPos : objData.chaosPos;
+      let target: THREE.Vector3;
 
-      // Lerp position
-      objData.currentPos.lerp(target, delta * (isFormed ? 1.5 : 0.5));
+      // Check if this particle is a unique photo for gallery
+      const isUniqueGalleryPhoto = galleryMode && uniquePhotoIndices.includes(i);
+
+      if (isUniqueGalleryPhoto) {
+        // Gallery mode: unique photos go to circular gallery positions
+        const photoIndexInGallery = uniquePhotoIndices.indexOf(i);
+        target = getGalleryPosition(photoIndexInGallery, uniquePhotoIndices.length, currentPhotoIndex);
+      } else if (isFormed) {
+        target = objData.targetPos;
+      } else {
+        target = objData.chaosPos;
+      }
+
+      // Lerp position with smooth transition
+      const lerpSpeed = galleryMode ? 2.0 : (isFormed ? 1.5 : 0.5);
+      objData.currentPos.lerp(target, delta * lerpSpeed);
       group.position.copy(objData.currentPos);
 
       // Rotation logic
-      if (isFormed) {
+      if (isUniqueGalleryPhoto) {
+        // Face outward from center in gallery mode (add PI rotation)
+        group.lookAt(0, 0, 0);
+        group.rotateY(Math.PI); // Face outward, not inward
+      } else if (isFormed) {
         if (objData.type === 'PHOTO') {
           group.lookAt(0, 0, 0); group.rotateY(Math.PI);
         } else if (objData.type === 'WHISKER') {
@@ -386,13 +434,26 @@ const CompositionElements = ({ state }: { state: 'CHAOS' | 'FORMED' }) => {
         group.rotation.y += delta * objData.rotationSpeed.y;
         group.rotation.z += delta * objData.rotationSpeed.z;
       }
+
+      // Visibility in gallery mode: 
+      // - Show only unique photos in gallery
+      // - Hide duplicates and non-photo elements
+      if (galleryMode) {
+        if (isUniqueGalleryPhoto) {
+          group.visible = true;
+        } else {
+          group.visible = false;
+        }
+      } else {
+        group.visible = true;
+      }
     });
   });
 
   return (
     <group ref={groupRef}>
       {data.map((obj, i) => (
-        <group key={i} scale={[obj.scale, obj.scale, obj.scale]} rotation={state === 'CHAOS' ? obj.chaosRotation : [0, 0, 0]}>
+        <group key={i} scale={galleryMode && obj.type === 'PHOTO' ? [2, 2, 2] : [obj.scale, obj.scale, obj.scale]} rotation={state === 'CHAOS' ? obj.chaosRotation : [0, 0, 0]}>
 
           {obj.type === 'PHOTO' && (
             <group>
@@ -458,11 +519,11 @@ const CompositionElements = ({ state }: { state: 'CHAOS' | 'FORMED' }) => {
 };
 
 // --- Main Scene Experience ---
-const Experience = ({ sceneState, rotationSpeed, birthdayMode }: { sceneState: 'CHAOS' | 'FORMED', rotationSpeed: number, birthdayMode: boolean }) => {
+const Experience = ({ sceneState, rotationSpeed, birthdayMode, galleryMode, currentPhotoIndex }: { sceneState: 'CHAOS' | 'FORMED', rotationSpeed: number, birthdayMode: boolean, galleryMode: boolean, currentPhotoIndex: number }) => {
   const controlsRef = useRef<any>(null);
 
   useFrame(() => {
-    if (controlsRef.current && !birthdayMode) {
+    if (controlsRef.current && !birthdayMode && !galleryMode) {
       controlsRef.current.setAzimuthalAngle(controlsRef.current.getAzimuthalAngle() + rotationSpeed);
       controlsRef.current.update();
     }
@@ -471,7 +532,7 @@ const Experience = ({ sceneState, rotationSpeed, birthdayMode }: { sceneState: '
   return (
     <>
       <PerspectiveCamera makeDefault position={[0, 0, 40]} fov={45} />
-      <OrbitControls ref={controlsRef} enablePan={false} enableZoom={true} minDistance={20} maxDistance={80} autoRotate={rotationSpeed === 0 && !birthdayMode} autoRotateSpeed={0.5} />
+      <OrbitControls ref={controlsRef} enablePan={false} enableZoom={true} minDistance={20} maxDistance={80} autoRotate={rotationSpeed === 0 && !birthdayMode && !galleryMode} autoRotateSpeed={0.5} />
 
       {/* Pinkish Environment */}
       <color attach="background" args={['#ffe6f2']} />
@@ -484,7 +545,7 @@ const Experience = ({ sceneState, rotationSpeed, birthdayMode }: { sceneState: '
       <group position={[0, 0, 0]}>
         {!birthdayMode && (
           <Suspense fallback={null}>
-            <CompositionElements state={sceneState} />
+            <CompositionElements state={sceneState} galleryMode={galleryMode} currentPhotoIndex={currentPhotoIndex} />
           </Suspense>
         )}
         {birthdayMode && <BirthdayMessage />}
@@ -574,7 +635,7 @@ const GestureController = ({ onGesture, onMove, onStatus, debugMode }: any) => {
                 let targetState: 'CHAOS' | 'FORMED' | null = null;
                 if (name === "Open_Palm") targetState = "CHAOS";
                 if (name === "Closed_Fist") targetState = "FORMED";
-                
+
                 // Only trigger state change if it's different from current state
                 if (targetState && targetState !== currentState.current) {
                   currentState.current = targetState;
@@ -624,7 +685,33 @@ export default function PhotoKittyApp() {
   const [aiStatus, setAiStatus] = useState("INITIALIZING...");
   const [debugMode, setDebugMode] = useState(false);
   const [photoCount, setPhotoCount] = useState(0);
+  const [galleryMode, setGalleryMode] = useState(false);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Total photos for gallery navigation (52 unique photos)
+  const totalGalleryPhotos = TOTAL_NUMBERED_PHOTOS;
+
+  const handleGalleryToggle = () => {
+    if (!galleryMode) {
+      // Entering gallery mode - only allowed in FORMED state
+      if (sceneState === 'FORMED') {
+        setGalleryMode(true);
+        setCurrentPhotoIndex(0);
+      }
+    } else {
+      // Exiting gallery mode
+      setGalleryMode(false);
+    }
+  };
+
+  const handlePrevPhoto = () => {
+    setCurrentPhotoIndex((prev) => (prev - 1 + totalGalleryPhotos) % totalGalleryPhotos);
+  };
+
+  const handleNextPhoto = () => {
+    setCurrentPhotoIndex((prev) => (prev + 1) % totalGalleryPhotos);
+  };
 
   // Check existing photos on mount
   useEffect(() => {
@@ -660,14 +747,14 @@ export default function PhotoKittyApp() {
     }
 
     const filesToUpload = Math.min(files.length, remainingSlots);
-    
+
     // In a real application, you would upload these files to a server
     // For now, we'll just show a message
     alert(`准备上传 ${filesToUpload} 张照片\n请将照片命名为 ${photoCount + 1}.jpg 到 ${photoCount + filesToUpload}.jpg\n并放入 public/photos/ 文件夹`);
-    
+
     // Update count (in real app, this would happen after successful upload)
     setPhotoCount(prev => Math.min(prev + filesToUpload, TOTAL_NUMBERED_PHOTOS));
-    
+
     // Reset input
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -678,12 +765,23 @@ export default function PhotoKittyApp() {
       {/* Header Title */}
       <div className="header-left">
         <h1 className="title">PhotoKitty 3D</h1>
-        <button
-          onClick={() => setSceneState(s => s === 'CHAOS' ? 'FORMED' : 'CHAOS')}
-          className="btn btn-primary"
-        >
-          {sceneState === 'CHAOS' ? '🐱 Formed' : '✨ Disperse'}
-        </button>
+        {!galleryMode && (
+          <button
+            onClick={() => setSceneState(s => s === 'CHAOS' ? 'FORMED' : 'CHAOS')}
+            className="btn btn-primary"
+          >
+            {sceneState === 'CHAOS' ? '🐱 Formed' : '✨ Disperse'}
+          </button>
+        )}
+        {/* Gallery button: show when FORMED and not in birthday mode, OR when in gallery mode */}
+        {((sceneState === 'FORMED' && !birthdayMode) || galleryMode) && (
+          <button
+            onClick={handleGalleryToggle}
+            className={`btn ${galleryMode ? 'btn-secondary active' : 'btn-primary'}`}
+          >
+            {galleryMode ? '🐱 Exit Gallery' : '🖼️ Gallery'}
+          </button>
+        )}
       </div>
 
       {/* Birthday Button */}
@@ -712,9 +810,9 @@ export default function PhotoKittyApp() {
           style={{ padding: '12px 20px', gap: '8px' }}
         >
           📸 Upload Photo
-          <span style={{ 
-            backgroundColor: 'rgba(255,255,255,0.3)', 
-            padding: '2px 8px', 
+          <span style={{
+            backgroundColor: 'rgba(255,255,255,0.3)',
+            padding: '2px 8px',
             borderRadius: '10px',
             fontSize: '0.85rem'
           }}>
@@ -727,17 +825,17 @@ export default function PhotoKittyApp() {
       {!birthdayMode && (
         <>
           <div className="bottom-right">
-            <div className="ai-status" style={{ 
+            <div className="ai-status" style={{
               color: aiStatus.includes('ERROR') ? '#FF0000' : '#666',
               fontSize: '0.8rem',
               letterSpacing: '1px'
             }}>
               {aiStatus}
             </div>
-            <button 
-              onClick={() => setDebugMode(!debugMode)} 
+            <button
+              onClick={() => setDebugMode(!debugMode)}
               className="debug-btn"
-              style={{ 
+              style={{
                 backgroundColor: debugMode ? '#FFD700' : 'rgba(255, 20, 147, 0.8)',
                 color: debugMode ? '#000' : '#fff'
               }}
@@ -748,15 +846,30 @@ export default function PhotoKittyApp() {
         </>
       )}
 
+      {/* Gallery Navigation */}
+      {galleryMode && (
+        <div className="gallery-nav">
+          <button onClick={handlePrevPhoto} className="gallery-arrow-btn">
+            ←
+          </button>
+          <span className="gallery-counter">
+            {currentPhotoIndex + 1} / {totalGalleryPhotos}
+          </span>
+          <button onClick={handleNextPhoto} className="gallery-arrow-btn">
+            →
+          </button>
+        </div>
+      )}
+
       {/* 3D Canvas */}
       <div style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
         <Canvas dpr={[1, 2]} shadows>
-          <Experience sceneState={sceneState} rotationSpeed={rotationSpeed} birthdayMode={birthdayMode} />
+          <Experience sceneState={sceneState} rotationSpeed={rotationSpeed} birthdayMode={birthdayMode} galleryMode={galleryMode} currentPhotoIndex={currentPhotoIndex} />
         </Canvas>
       </div>
 
-      {/* Gesture Controller - Only active in Kitty mode */}
-      {!birthdayMode && (
+      {/* Gesture Controller - Only active in Kitty mode, not in Gallery mode */}
+      {!birthdayMode && !galleryMode && (
         <GestureController onGesture={setSceneState} onMove={setRotationSpeed} onStatus={setAiStatus} debugMode={debugMode} />
       )}
     </div>

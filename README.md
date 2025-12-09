@@ -17,6 +17,10 @@
 全新的圆环式 3D 照片画廊，52 张照片以拍立得风格环绕排列，支持按钮或划动遍历照片
 （本来也有AI手势控制,但资源调用过多导致WebGL上下文溢出了）
 
+项目一览：
+<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/0ac85324-1429-423d-bcbc-b3f14d216211" />
+
+
 ---
 
 ## ✨ 项目特性
@@ -135,7 +139,8 @@ npm run build
 
 用到的AI、平台以优先级排序：Gemini Studio、Claude Code、Cursor、Antigravity、VS Code。
 
-同时特别感谢开源分享来自https://github.com/moleculemmeng020425/christmas-tree，开发灵感和手势算法底层源码来源于此。
+同时特别感谢开源分享来自https://github.com/moleculemmeng020425/christmas-tree 
+开发灵感和部分手势算法底层源码来源于此。
 
 ### Why Kitty？
 因为她喜欢。
@@ -191,7 +196,7 @@ MIT License - 这意味着你可以以非商业化形式自由使用、修改和
 ---
 
 <div align="center">
-**Made with ❤️ and ☕ By [Etytech](https://etytech.com/)**
+Made with ❤️ and ☕ By [Etytech](https://etytech.com/)
 
 *用代码书写爱，用科技传递心意*
 

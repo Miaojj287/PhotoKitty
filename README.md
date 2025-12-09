@@ -18,7 +18,8 @@
 （本来也有AI手势控制,但资源调用过多导致WebGL上下文溢出了）
 
 项目一览：
-<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/0ac85324-1429-423d-bcbc-b3f14d216211" />
+<img width="1512" height="949" alt="image" src="https://github.com/user-attachments/assets/53a7fbd6-6074-4cf8-aa27-41b643d85e63" />
+
 
 
 ---
